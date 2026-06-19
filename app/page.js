@@ -361,7 +361,7 @@ export default function Home() {
             </div>
             
             <div className={styles.historyContainer}>
-              <div className={styles.historyControls}>
+              <div className={styles.historyArrowStack}>
                 <button onClick={handleHistoryUp} disabled={historyIndex === 0} className={styles.historyArrow}>
                   ▲
                 </button>
@@ -369,6 +369,7 @@ export default function Home() {
                   ▼
                 </button>
               </div>
+              
               <div className={styles.historyList}>
                 {icecastData.history && icecastData.history.length > 0 ? (
                   <AnimatePresence mode="wait">
