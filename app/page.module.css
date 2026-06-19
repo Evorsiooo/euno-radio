@@ -228,7 +228,7 @@
 .historyArrowStack {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 0px;
   justify-content: center;
 }
 
@@ -239,7 +239,7 @@
   font-size: 1.2rem;
   cursor: pointer;
   transition: color 0.2s;
-  padding: 5px;
+  padding: 2px 5px;
 }
 
 .historyArrow:hover:not(:disabled) {

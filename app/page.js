@@ -81,10 +81,10 @@ export default function Home() {
   useEffect(() => {
     let timer;
     if (isLoading) {
-      setBufferCountdown(publicConfig.bufferTime || 4);
+      setBufferCountdown((publicConfig.bufferTime || 4) * 10);
       timer = setInterval(() => {
         setBufferCountdown(prev => prev > 0 ? prev - 1 : 0);
-      }, 1000);
+      }, 100);
     } else {
       setBufferCountdown(0);
     }
@@ -253,7 +253,7 @@ export default function Home() {
                     exit={{ opacity: 0, y: 5 }} 
                     className={styles.bufferingText}
                   >
-                    Buffering... {bufferCountdown > 0 ? `[${bufferCountdown}s]` : ''}
+                    Buffering... {bufferCountdown > 0 ? `[${(bufferCountdown / 10).toFixed(1)}s]` : ''}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -309,7 +309,7 @@ export default function Home() {
                       exit={{ opacity: 0, y: 5 }} 
                       className={styles.bufferingText}
                     >
-                      Buffering... {bufferCountdown > 0 ? `[${bufferCountdown}s]` : ''}
+                      Buffering... {bufferCountdown > 0 ? `[${(bufferCountdown / 10).toFixed(1)}s]` : ''}
                     </motion.div>
                   )}
                 </AnimatePresence>
