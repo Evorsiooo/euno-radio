@@ -93,6 +93,21 @@ export async function GET() {
       title = parts.slice(1).join(' - ').trim();
     }
 
+    // Decode HTML entities (Icecast often encodes apostrophes and ampersands)
+    const decodeHtmlEntities = (str) => {
+      if (!str) return str;
+      return str.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec))
+                .replace(/&#x([0-9a-f]+);/gi, (match, hex) => String.fromCharCode(parseInt(hex, 16)))
+                .replace(/&quot;/g, '"')
+                .replace(/&apos;/g, "'")
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>');
+    };
+
+    artist = decodeHtmlEntities(artist);
+    title = decodeHtmlEntities(title);
+
     // Fetch album art
     const coverArt = await fetchAlbumArt(artist, title, config);
 
