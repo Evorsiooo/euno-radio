@@ -361,9 +361,14 @@ export default function Home() {
             </div>
             
             <div className={styles.historyContainer}>
-              <button onClick={handleHistoryUp} disabled={historyIndex === 0} className={styles.historyArrow}>
-                ▲
-              </button>
+              <div className={styles.historyControls}>
+                <button onClick={handleHistoryUp} disabled={historyIndex === 0} className={styles.historyArrow}>
+                  ▲
+                </button>
+                <button onClick={handleHistoryDown} disabled={!icecastData.history || historyIndex >= icecastData.history.length - 1} className={styles.historyArrow}>
+                  ▼
+                </button>
+              </div>
               <div className={styles.historyList}>
                 {icecastData.history && icecastData.history.length > 0 ? (
                   <AnimatePresence mode="wait">
@@ -388,9 +393,6 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              <button onClick={handleHistoryDown} disabled={!icecastData.history || historyIndex >= icecastData.history.length - 1} className={styles.historyArrow}>
-                ▼
-              </button>
             </div>
 
             {/* Calendar Widget */}
