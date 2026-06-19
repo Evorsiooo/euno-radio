@@ -35,23 +35,23 @@ export async function GET() {
   }
 
   try {
-    // Standard Icecast uses /status-json.xsl. Some panels use /admin/stats.json
+    // Standard Icecast uses /status-json.xsl (no auth needed usually). 
+    // Some panels use /admin/stats.json (auth required).
     const endpoints = [
-      `${config.icecastAdminUrl}/status-json.xsl`,
-      `${config.icecastAdminUrl}/admin/stats.json`
+      { url: `${config.icecastAdminUrl}/status-json.xsl`, auth: false },
+      { url: `${config.icecastAdminUrl}/admin/stats.json`, auth: true }
     ];
     
-    // Create Basic Auth header
     const authString = Buffer.from(`${config.icecastUsername}:${config.icecastPassword}`).toString('base64');
     
     let res = null;
     let data = null;
 
-    for (const endpoint of endpoints) {
-      res = await fetch(endpoint, {
-        headers: { 'Authorization': `Basic ${authString}` },
-        cache: 'no-store'
-      });
+    for (const ep of endpoints) {
+      const headers = {};
+      if (ep.auth) headers['Authorization'] = `Basic ${authString}`;
+      
+      res = await fetch(ep.url, { headers, cache: 'no-store' });
       if (res.ok) {
         data = await res.json();
         break; // found the right endpoint

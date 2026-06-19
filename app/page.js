@@ -77,24 +77,17 @@ export default function Home() {
   }, [publicConfig.streamUrl]);
 
   useEffect(() => {
-    const fetchIcecastData = async () => {
+    const fetchIcecast = async () => {
       try {
         const res = await fetch('/api/icecast');
         const data = await res.json();
-        
-        if (data.error) {
-          console.error("Icecast API error:", data.error);
-          return;
+        if (data.status === 'online' || data.status === 'offline') {
+          setIcecastData({
+            currentTrack: data.currentTrack,
+            history: data.history || []
+          });
         }
-
-        setIcecastData({
-          status: data.status || 'offline',
-          currentTrack: data.currentTrack || { title: 'Offline', artist: 'Auto DJ', coverArt: '/default-album-art.svg' },
-          history: data.history || []
-        });
-      } catch (err) {
-        console.error("Failed to fetch icecast metadata", err);
-      }
+      } catch (err) {}
     };
 
     const fetchCalendar = async () => {
@@ -105,10 +98,10 @@ export default function Home() {
       } catch (err) {}
     };
 
-    fetchIcecastData();
+    fetchIcecast();
     fetchCalendar();
 
-    const icecastInterval = setInterval(fetchIcecastData, 10000);
+    const icecastInterval = setInterval(fetchIcecast, 10000);
     const calendarInterval = setInterval(fetchCalendar, 60000);
 
     return () => {
