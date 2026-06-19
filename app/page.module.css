@@ -207,10 +207,37 @@
   margin-bottom: 15px;
 }
 
+.historyContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.historyArrow {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 5px;
+}
+
+.historyArrow:hover:not(:disabled) {
+  color: var(--text-primary);
+}
+
+.historyArrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 .historyList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
+  width: 100%;
 }
 
 .historyItem {

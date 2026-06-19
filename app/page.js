@@ -22,6 +22,7 @@ export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [volume, setVolume] = useState(1);
+  const [historyIndex, setHistoryIndex] = useState(0);
   const audioRef = useRef(null);
   
   // For detecting mini player window
@@ -167,6 +168,18 @@ export default function Home() {
     window.open(window.location.href, 'MiniPlayer', 'width=350,height=450,menubar=no,toolbar=no,location=no,status=no,resizable=yes');
   };
 
+  const handleHistoryUp = () => {
+    if (icecastData.history && historyIndex > 0) {
+      setHistoryIndex(prev => prev - 1);
+    }
+  };
+
+  const handleHistoryDown = () => {
+    if (icecastData.history && historyIndex < icecastData.history.length - 1) {
+      setHistoryIndex(prev => prev + 1);
+    }
+  };
+
   if (isMini) {
     return (
       <main className={styles.main}>
@@ -305,19 +318,37 @@ export default function Home() {
               HISTORY
             </div>
             
-            <div className={styles.historyList}>
-              {icecastData.history.length === 0 && (
-                <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No recent tracks...</div>
-              )}
-              {icecastData.history.map((track, idx) => (
-                <div key={idx} className={styles.historyItem}>
-                  <img src={track.coverArt || '/default-album-art.svg'} alt="" className={styles.historyArt} />
-                  <div className={styles.historyInfo}>
-                    <span className={styles.historyTitle}>{track.title}</span>
-                    <span className={styles.historyArtist}>{track.artist}</span>
+            <div className={styles.historyContainer}>
+              <button onClick={handleHistoryUp} disabled={historyIndex === 0} className={styles.historyArrow}>
+                ▲
+              </button>
+              <div className={styles.historyList}>
+                {icecastData.history && icecastData.history.length > 0 ? (
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={historyIndex}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                      className={styles.historyItem}
+                    >
+                      <img src={icecastData.history[historyIndex].coverArt || '/default-album-art.svg'} alt="" className={styles.historyArt} />
+                      <div className={styles.historyInfo}>
+                        <div className={styles.historyTitle}>{icecastData.history[historyIndex].title}</div>
+                        <div className={styles.historyArtist}>{icecastData.history[historyIndex].artist}</div>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                ) : (
+                  <div className={styles.historyItem}>
+                    <div className={styles.historyInfo}>No history yet</div>
                   </div>
-                </div>
-              ))}
+                )}
+              </div>
+              <button onClick={handleHistoryDown} disabled={!icecastData.history || historyIndex >= icecastData.history.length - 1} className={styles.historyArrow}>
+                ▼
+              </button>
             </div>
 
             {/* Calendar Widget */}

@@ -113,8 +113,8 @@ export async function GET() {
       // Prevent duplicates, unshift new track
       trackHistory.unshift(currentTrack);
       
-      // Keep only last 3 tracks
-      if (trackHistory.length > 3) {
+      // Keep only last 20 tracks
+      if (trackHistory.length > 20) {
         trackHistory.pop();
       }
     }

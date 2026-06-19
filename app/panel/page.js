@@ -173,6 +173,40 @@ export default function AdminPage() {
               <label>Fanart.tv API Key (Optional)</label>
               <input type="text" name="fanartTvApiKey" value={config.fanartTvApiKey || ''} onChange={handleChange} />
             </div>
+
+            <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #333' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '1.2rem' }}>Album Art API Priority</label>
+              <p style={{ fontSize: '0.9rem', color: '#888', marginBottom: '15px' }}>
+                Select the order in which APIs are checked for album art.
+              </p>
+              
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                <div className={styles.inputGroup} style={{ flex: 1 }}>
+                  <label>Priority 1</label>
+                  <select name="apiPriority1" value={config.apiPriority1 || 'lastfm'} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '4px', background: '#111', color: '#fff', border: '1px solid #333' }}>
+                    <option value="lastfm">Last.fm</option>
+                    <option value="itunes">iTunes</option>
+                    <option value="fanart">Fanart.tv</option>
+                  </select>
+                </div>
+                <div className={styles.inputGroup} style={{ flex: 1 }}>
+                  <label>Priority 2</label>
+                  <select name="apiPriority2" value={config.apiPriority2 || 'itunes'} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '4px', background: '#111', color: '#fff', border: '1px solid #333' }}>
+                    <option value="lastfm">Last.fm</option>
+                    <option value="itunes">iTunes</option>
+                    <option value="fanart">Fanart.tv</option>
+                  </select>
+                </div>
+                <div className={styles.inputGroup} style={{ flex: 1 }}>
+                  <label>Priority 3</label>
+                  <select name="apiPriority3" value={config.apiPriority3 || 'fanart'} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '4px', background: '#111', color: '#fff', border: '1px solid #333' }}>
+                    <option value="lastfm">Last.fm</option>
+                    <option value="itunes">iTunes</option>
+                    <option value="fanart">Fanart.tv</option>
+                  </select>
+                </div>
+              </div>
+            </div>
             
             <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #333' }}>
               <label style={{ display: 'block', marginBottom: '10px' }}>Troubleshooting</label>
