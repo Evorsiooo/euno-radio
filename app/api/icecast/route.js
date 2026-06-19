@@ -80,7 +80,7 @@ export async function GET() {
     }
 
     if (!source) {
-       return NextResponse.json({ status: 'offline', message: 'Stream offline' });
+       return NextResponse.json({ status: 'offline', message: 'Stream offline', currentTrack: { title: 'Offline', artist: 'Auto DJ', coverArt: '/default-album-art.svg' }, history: [] });
     }
 
     let artist = source.artist || 'Unknown Artist';
