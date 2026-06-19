@@ -1,142 +1,463 @@
-.page {
-  --background: #fafafa;
-  --foreground: #fff;
+.main {
+  width: 100%;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+}
 
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
+.section {
+  width: 100%;
+  min-height: 100vh;
+  scroll-snap-align: start;
   display: flex;
-  flex: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
+  padding: 40px 20px;
+  position: relative;
 }
 
-.main {
-  display: flex;
-  flex: 1;
-  width: 100%;
-  max-width: 800px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
-}
-
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
-}
-
-.intro h1 {
-  max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
-  color: var(--text-primary);
-}
-
-.intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
-  color: var(--text-secondary);
-}
-
-.intro a {
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.ctas {
+/* --- Radio Player Top Section --- */
+.radioContainer {
   display: flex;
   flex-direction: row;
+  max-width: 1200px;
   width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
+  gap: 60px;
 }
 
-.ctas a {
+@media (max-width: 900px) {
+  .radioContainer {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+}
+
+.albumSide {
+  flex: 1;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 450px;
+}
+
+.albumArtWrapper {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  border: 2px solid var(--border-color);
+  position: relative;
+}
+
+.albumArtWrapper::before, .albumArtWrapper::after {
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  z-index: 10;
+  margin: 10px;
+}
+
+.albumArtWrapper::before {
+  top: 0; left: 0;
+  border-top: 3px solid var(--accent-color);
+  border-left: 3px solid var(--accent-color);
+}
+
+.albumArtWrapper::after {
+  bottom: 0; right: 0;
+  border-bottom: 3px solid var(--accent-color);
+  border-right: 3px solid var(--accent-color);
+}
+
+.albumArt {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.albumArt:hover {
+  transform: scale(1.05);
+}
+
+.controls {
+  padding: 10px 0;
+  display: flex;
   align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
+  gap: 20px;
+  width: 100%;
+}
+
+.playBtn {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 2.5rem;
   cursor: pointer;
-  width: fit-content;
-  font-weight: 500;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
-  gap: 8px;
+.playBtn:hover {
+  color: var(--accent-color);
 }
 
-a.secondary {
-  border-color: var(--button-secondary-border);
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
+.spinner {
+  animation: spin 1s linear infinite;
+}
 
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
+.volumeSlider {
+  flex: 1;
+  -webkit-appearance: none;
+  background: var(--border-color);
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+}
+.volumeSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  cursor: pointer;
+}
+
+.infoSide {
+  flex: 1.5;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.headerRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.tunedTo {
+  color: var(--accent-color);
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.popupButton {
+  background: transparent;
+  border: 1px solid var(--text-secondary);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.popupButton:hover {
+  background: var(--text-secondary);
+  color: #000;
+}
+
+.songTitle {
+  font-size: 3rem;
+  font-weight: 800;
+  font-style: italic;
+  margin-bottom: 5px;
+  line-height: 1.1;
+  text-transform: uppercase;
 }
 
 @media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
-  .intro {
-    gap: 16px;
-  }
-
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
+  .songTitle {
+    font-size: 2rem;
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
+.artistName {
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  text-transform: uppercase;
+}
+
+.historyHeader, .calendarTitle {
+  color: var(--accent-color);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color);
+  gap: 15px;
+}
+
+.historyItem:last-child {
+  border-bottom: none;
+}
+
+.historyArt {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.historyInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.historyTitle {
+  font-weight: bold;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.historyArtist {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+/* --- Calendar Area --- */
+.calendarWrapper {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.showRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.showRow:last-child {
+  border-bottom: none;
+}
+
+.showLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.showName {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.showTime {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.scrollPrompt {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--text-secondary);
+}
+
+/* --- Bento Grid Section --- */
+.bentoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+  max-width: 1000px;
+  height: 600px;
+}
+
+@media (max-width: 768px) {
+  .bentoGrid {
+    display: flex;
+    flex-direction: column;
+    height: auto;
   }
+}
 
-  .page {
-    --background: #000;
-    --foreground: #000;
+.bentoCard {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s, border-color 0.3s;
+  overflow: hidden;
+  position: relative;
+}
 
-    --text-primary: #ededed;
-    --text-secondary: #999;
+.bentoCard:hover {
+  border-color: var(--accent-color);
+}
 
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
+.topLeft {
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+}
+
+.topLeft h2 {
+  color: var(--accent-color);
+  margin-bottom: 15px;
+}
+
+.topLeft p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.copyBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.copyBox:hover {
+  border-color: var(--accent-color);
+}
+
+.copyBox code {
+  color: var(--text-primary);
+  font-family: monospace;
+}
+
+.bottomLeft {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  background: linear-gradient(45deg, var(--panel-bg), #1a1a1f);
+}
+
+.bottomLeft:hover {
+  transform: scale(1.02);
+  background: var(--accent-color);
+  color: #000;
+}
+
+.rightHalf {
+  grid-column: 2 / 3;
+  grid-row: 1 / 3;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  background: linear-gradient(135deg, #18181a, #2a2a2c);
+}
+
+.rightHalf:hover {
+  transform: scale(1.02);
+  background: var(--accent-color);
+  color: #000;
+}
+
+.rightHalf h1, .bottomLeft h2 {
+  margin: 0;
+  transition: color 0.3s;
+}
+
+.rightHalf:hover h1, .rightHalf:hover p, .bottomLeft:hover h2 {
+  color: #000 !important;
+}
+
+.rightHalf p {
+  color: var(--text-secondary);
+  margin-top: 10px;
+}
+
+/* Mini Player Styles */
+.miniContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  height: 100vh;
+  text-align: center;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+.miniArtWrapper {
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  max-height: 40vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.miniArt {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+@media (max-height: 300px) {
+  .miniArtWrapper {
+    display: none;
   }
+}
+
+.miniTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.miniArtist {
+  color: var(--text-secondary);
 }
