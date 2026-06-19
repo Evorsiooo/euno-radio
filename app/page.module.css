@@ -119,6 +119,17 @@
   animation: spin 1s linear infinite;
 }
 
+.bufferingText {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  margin-top: 5px;
+}
+
 .volumeSlider {
   flex: 1;
   -webkit-appearance: none;

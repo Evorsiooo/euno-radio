@@ -54,6 +54,7 @@ export async function GET(request) {
       discordServerLink: config.discordServerLink,
       bentoButtonLink: config.bentoButtonLink,
       discordBotCommand: config.discordBotCommand || '/setup',
+      bufferTime: config.bufferTime || 4,
     };
     return NextResponse.json(publicConfig);
   }

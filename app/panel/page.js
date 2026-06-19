@@ -159,6 +159,11 @@ export default function AdminPage() {
               <label>Frontend Stream URL (Audio Source)</label>
               <input type="text" name="streamUrl" value={config.streamUrl || ''} onChange={handleChange} />
             </div>
+            
+            <div className={styles.inputGroup} style={{ marginTop: '15px' }}>
+              <label>Buffer Countdown (Seconds)</label>
+              <input type="number" name="bufferTime" value={config.bufferTime || 4} onChange={handleChange} min="1" max="30" />
+            </div>
           </div>
         </div>
 

@@ -21,6 +21,7 @@ const ArrowDown = () => (
 export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [bufferCountdown, setBufferCountdown] = useState(0);
   const [volume, setVolume] = useState(1);
   const [historyIndex, setHistoryIndex] = useState(0);
   const audioRef = useRef(null);
@@ -76,6 +77,19 @@ export default function Home() {
       audioRef.current = audio;
     }
   }, [publicConfig.streamUrl]);
+
+  useEffect(() => {
+    let timer;
+    if (isLoading) {
+      setBufferCountdown(publicConfig.bufferTime || 4);
+      timer = setInterval(() => {
+        setBufferCountdown(prev => prev > 0 ? prev - 1 : 0);
+      }, 1000);
+    } else {
+      setBufferCountdown(0);
+    }
+    return () => clearInterval(timer);
+  }, [isLoading, publicConfig.bufferTime]);
 
   useEffect(() => {
     const fetchIcecast = async () => {
@@ -227,9 +241,23 @@ export default function Home() {
             </AnimatePresence>
           </div>
           <div className={styles.controls} style={{ justifyContent: 'center' }}>
-            <button onClick={togglePlay} className={styles.playBtn}>
-              {isLoading ? <LoadingIcon /> : (isPlaying ? <PauseIcon /> : <PlayIcon />)}
-            </button>
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+              <button onClick={togglePlay} className={styles.playBtn}>
+                {isLoading ? <LoadingIcon /> : (isPlaying ? <PauseIcon /> : <PlayIcon />)}
+              </button>
+              <AnimatePresence>
+                {isLoading && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -5 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: 5 }} 
+                    className={styles.bufferingText}
+                  >
+                    Buffering... {bufferCountdown > 0 ? `[${bufferCountdown}s]` : ''}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <input 
               type="range" 
               min="0" max="1" step="0.01" 
@@ -269,9 +297,23 @@ export default function Home() {
             </AnimatePresence>
             
             <div className={styles.controls}>
-              <button onClick={togglePlay} className={styles.playBtn}>
-                {isLoading ? <LoadingIcon /> : (isPlaying ? <PauseIcon /> : <PlayIcon />)}
-              </button>
+              <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+                <button onClick={togglePlay} className={styles.playBtn}>
+                  {isLoading ? <LoadingIcon /> : (isPlaying ? <PauseIcon /> : <PlayIcon />)}
+                </button>
+                <AnimatePresence>
+                  {isLoading && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -5 }} 
+                      animate={{ opacity: 1, y: 0 }} 
+                      exit={{ opacity: 0, y: 5 }} 
+                      className={styles.bufferingText}
+                    >
+                      Buffering... {bufferCountdown > 0 ? `[${bufferCountdown}s]` : ''}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
               <input 
                 type="range" 
                 min="0" max="1" step="0.01" 
