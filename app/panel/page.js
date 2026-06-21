@@ -102,7 +102,7 @@ export default function AdminPage() {
     setNewPassword('');
     try {
       const token = localStorage.getItem('adminToken');
-      const res = await fetch('/api/admin/rotate-password', {
+      const res = await fetch('/api/panel/rotate-password', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -110,7 +110,7 @@ export default function AdminPage() {
       if (res.ok) {
         // Trigger cron save
         if (config.rotationFrequency !== undefined) {
-          await fetch('/api/admin/save-cron', {
+          await fetch('/api/panel/save-cron', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

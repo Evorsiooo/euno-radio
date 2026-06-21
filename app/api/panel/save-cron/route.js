@@ -43,7 +43,7 @@ export async function POST(request) {
     // Build the cron line to curl our rotate-password API route securely
     const token = process.env.ADMIN_TOKEN || "";
     // Note: The empty newline at the end is strictly required by cron
-    const cronContent = `${cronExpr} root curl -X POST -H "Authorization: Bearer ${token}" http://localhost:3000/api/admin/rotate-password\n`;
+    const cronContent = `${cronExpr} root curl -X POST -H "Authorization: Bearer ${token}" http://localhost:3000/api/panel/rotate-password\n`;
 
     fs.writeFileSync(CRON_FILE_PATH, cronContent, { mode: 0o644 });
 
