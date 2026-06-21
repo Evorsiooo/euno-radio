@@ -18,13 +18,24 @@ function readConfig() {
 
 function isAuthorized(request) {
   const authHeader = request.headers.get('Authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log("[Rotate-Password] Auth failed: Missing or invalid Authorization header.", authHeader);
+    return false;
+  }
   const token = authHeader.substring(7);
   
   const expectedToken = process.env.ADMIN_TOKEN;
-  if (!expectedToken) return true;
+  if (!expectedToken) {
+    console.log("[Rotate-Password] Auth bypass: ADMIN_TOKEN is not set in environment.");
+    return true;
+  }
   
-  return token === expectedToken;
+  if (token !== expectedToken) {
+    console.log(`[Rotate-Password] Auth failed: Token mismatch. Expected: '${expectedToken}', Got: '${token}'`);
+    return false;
+  }
+  
+  return true;
 }
 
 export async function POST(request) {
