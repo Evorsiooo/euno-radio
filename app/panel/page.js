@@ -101,7 +101,6 @@ export default function AdminPage() {
     setIsRotating(true);
     setNewPassword('');
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch('/api/panel/rotate-password', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
