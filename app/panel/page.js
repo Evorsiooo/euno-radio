@@ -8,6 +8,8 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isRotating, setIsRotating] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
   const [isClearing, setIsClearing] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
@@ -95,6 +97,38 @@ export default function AdminPage() {
     setIsClearing(false);
   };
 
+  const handleRotate = async () => {
+    setIsRotating(true);
+    setNewPassword('');
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch('/api/admin/rotate-password', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        // Trigger cron save
+        if (config.rotationFrequency !== undefined) {
+          await fetch('/api/admin/save-cron', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ frequency: config.rotationFrequency })
+          });
+        }
+        setNewPassword(data.newPassword);
+      } else {
+        alert("Rotation failed: " + data.error);
+      }
+    } catch (err) {
+      alert("Error triggering rotation");
+    }
+    setIsRotating(false);
+  };
+
   if (!isAuthenticated) {
     return (
       <div className={styles.container}>
@@ -159,11 +193,64 @@ export default function AdminPage() {
               <label>Frontend Stream URL (Audio Source)</label>
               <input type="text" name="streamUrl" value={config.streamUrl || ''} onChange={handleChange} />
             </div>
-            
             <div className={styles.inputGroup} style={{ marginTop: '15px' }}>
               <label>Buffer Countdown (Seconds)</label>
               <input type="number" name="bufferTime" value={config.bufferTime || 4} onChange={handleChange} min="1" max="30" />
             </div>
+          </div>
+        </div>
+
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div className={styles.cardTitle}>OBS Source Password Rotation</div>
+          </div>
+          <div className={styles.cardBody}>
+            <p style={{ color: '#aaa', fontSize: '0.9rem', marginBottom: '15px' }}>
+              Automatically or manually rotate the Icecast broadcasting source password to maintain security.
+            </p>
+            
+            <div className={styles.inputGroup} style={{ marginBottom: '15px' }}>
+              <label>Discord Webhook URL (For Notifications)</label>
+              <input type="text" name="discordWebhookUrl" value={config.discordWebhookUrl || ''} onChange={handleChange} placeholder="https://discord.com/api/webhooks/..." />
+            </div>
+            
+            <div className={styles.inputGroup} style={{ marginBottom: '20px' }}>
+              <label>Auto-Rotate Frequency</label>
+              <select name="rotationFrequency" value={config.rotationFrequency || '0'} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '4px', background: '#111', color: '#fff', border: '1px solid #333' }}>
+                <option value="0">Off (Manual Only)</option>
+                <option value="12">Every 12 Hours</option>
+                <option value="24">Every 24 Hours</option>
+                <option value="48">Every 48 Hours</option>
+                <option value="72">Every 72 Hours</option>
+              </select>
+            </div>
+
+            <button 
+              className={styles.button} 
+              onClick={handleRotate} 
+              disabled={isRotating}
+              style={{ background: '#eab308', color: '#000', fontWeight: 'bold' }}
+            >
+              {isRotating ? 'Rotating...' : 'Rotate Broadcast Password Now'}
+            </button>
+
+            {newPassword && (
+              <div style={{ marginTop: '20px', padding: '15px', background: '#222', borderRadius: '8px', border: '1px solid #444' }}>
+                <div style={{ color: '#aaa', fontSize: '0.85rem', marginBottom: '5px' }}>New Password:</div>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <code style={{ fontSize: '1.2rem', color: '#4ade80', flex: 1, wordBreak: 'break-all' }}>{newPassword}</code>
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(newPassword);
+                      alert('Copied to clipboard!');
+                    }}
+                    style={{ padding: '8px 12px', background: '#333', border: 'none', color: '#fff', borderRadius: '4px', cursor: 'pointer' }}
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
