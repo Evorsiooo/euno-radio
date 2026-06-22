@@ -21,10 +21,17 @@ const ArrowDown = () => (
 export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isReloading, setIsReloading] = useState(false);
   const [bufferCountdown, setBufferCountdown] = useState(0);
   const [volume, setVolume] = useState(1);
   const [historyIndex, setHistoryIndex] = useState(0);
   const audioRef = useRef(null);
+  const isPlayingRef = useRef(false);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+  
   
   // For detecting mini player window
   const [isMini, setIsMini] = useState(false);
@@ -69,10 +76,39 @@ export default function Home() {
       const audio = new Audio(publicConfig.streamUrl);
       audio.volume = volume;
       
+      const handleErrorOrDrop = () => {
+        if (!isPlayingRef.current) {
+          setIsLoading(false);
+          return;
+        }
+        setIsReloading(true);
+        setIsLoading(true);
+        setTimeout(() => {
+          if (audioRef.current && isPlayingRef.current) {
+            const timestamp = new Date().getTime();
+            const baseUrl = publicConfig.streamUrl.split('?')[0];
+            audioRef.current.src = `${baseUrl}?t=${timestamp}`;
+            audioRef.current.load();
+            audioRef.current.play().catch(err => {
+              console.error("Auto-reconnect failed", err);
+              setIsPlaying(false);
+              setIsLoading(false);
+              setIsReloading(false);
+            }).then(() => {
+              setIsReloading(false);
+            });
+          } else {
+             setIsReloading(false);
+             setIsLoading(false);
+          }
+        }, 2500);
+      };
+
       audio.addEventListener('waiting', () => setIsLoading(true));
-      audio.addEventListener('playing', () => setIsLoading(false));
+      audio.addEventListener('playing', () => { setIsLoading(false); setIsReloading(false); });
       audio.addEventListener('pause', () => setIsLoading(false));
-      audio.addEventListener('error', () => setIsLoading(false));
+      audio.addEventListener('error', handleErrorOrDrop);
+      audio.addEventListener('ended', handleErrorOrDrop);
       
       audioRef.current = audio;
     }
@@ -253,7 +289,7 @@ export default function Home() {
                     exit={{ opacity: 0, y: 5 }} 
                     className={styles.bufferingText}
                   >
-                    Buffering... {bufferCountdown > 0 ? `[${(bufferCountdown / 10).toFixed(1)}s]` : ''}
+                    {isReloading ? 'Reloading...' : `Buffering... ${bufferCountdown > 0 ? `[${(bufferCountdown / 10).toFixed(1)}s]` : ''}`}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -309,7 +345,7 @@ export default function Home() {
                       exit={{ opacity: 0, y: 5 }} 
                       className={styles.bufferingText}
                     >
-                      Buffering... {bufferCountdown > 0 ? `[${(bufferCountdown / 10).toFixed(1)}s]` : ''}
+                      {isReloading ? 'Reloading...' : `Buffering... ${bufferCountdown > 0 ? `[${(bufferCountdown / 10).toFixed(1)}s]` : ''}`}
                     </motion.div>
                   )}
                 </AnimatePresence>
