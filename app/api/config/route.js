@@ -4,6 +4,8 @@ import path from 'path';
 
 const CONFIG_PATH = path.join(process.cwd(), 'data', 'config.json');
 
+export const dynamic = 'force-dynamic';
+
 // Helper to read config
 function readConfig() {
   try {

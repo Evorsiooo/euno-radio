@@ -53,7 +53,7 @@ export default function Home() {
       setIsMini(true);
     }
 
-    fetch('/api/config')
+    fetch('/api/config', { cache: 'no-store' })
       .then(r => r.json())
       .then(data => setPublicConfig(data))
       .catch(console.error);
