@@ -62,7 +62,7 @@ export default function Home() {
   const effectiveTrack = useMemo(() => {
     let track = { ...icecastData.currentTrack };
     if (calendarData.currentShow && publicConfig.brandedShows) {
-      const showName = calendarData.currentShow.name.toLowerCase();
+      const showName = calendarData.currentShow.name.trim().toLowerCase();
       for (const brandedShow of publicConfig.brandedShows) {
         if (!brandedShow.matchers) continue;
         const matchers = brandedShow.matchers.split('\n').map(s => s.trim().toLowerCase()).filter(s => s);
@@ -70,11 +70,11 @@ export default function Home() {
         for (const matcher of matchers) {
           if (matcher.endsWith('*')) {
             const prefix = matcher.slice(0, -1);
-            if (showName.startsWith(prefix)) {
+            if (showName.startsWith(prefix) || showName.includes(prefix)) {
               matched = true;
               break;
             }
-          } else if (showName === matcher) {
+          } else if (showName === matcher || showName.includes(matcher)) {
             matched = true;
             break;
           }

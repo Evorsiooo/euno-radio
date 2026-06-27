@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 const CALENDAR_ID = '8f04b7a541d330edc44e74ae3643405dc1c8b2a57a11d49b05574907ff2aec2a@group.calendar.google.com';
 const API_KEY = 'AIzaSyB7YmB7mdVrKHgb25InRvS19O1sZDyROvU';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     // We want events from right now to 30 days in the future

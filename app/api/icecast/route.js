@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { fetchAlbumArt } from '@/utils/albumArt';
-
 const CONFIG_PATH = path.join(process.cwd(), 'data', 'config.json');
+
+export const dynamic = 'force-dynamic';
 
 function readConfig() {
   try {
