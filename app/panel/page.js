@@ -48,6 +48,29 @@ export default function AdminPage() {
     setConfig(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleAddBrandedShow = () => {
+    setConfig(prev => ({
+      ...prev,
+      brandedShows: [...(prev.brandedShows || []), { primaryName: '', matchers: '', logoUrl: '' }]
+    }));
+  };
+
+  const handleBrandedShowChange = (index, field, value) => {
+    setConfig(prev => {
+      const newShows = [...(prev.brandedShows || [])];
+      newShows[index][field] = value;
+      return { ...prev, brandedShows: newShows };
+    });
+  };
+
+  const handleRemoveBrandedShow = (index) => {
+    setConfig(prev => {
+      const newShows = [...(prev.brandedShows || [])];
+      newShows.splice(index, 1);
+      return { ...prev, brandedShows: newShows };
+    });
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -250,6 +273,42 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div className={styles.cardTitle}>Dynamic Show Branding (Overrides)</div>
+          </div>
+          <div className={styles.cardBody}>
+            <p style={{ color: '#aaa', fontSize: '0.9rem', marginBottom: '15px' }}>
+              Override the live metadata and album art when these shows are active on the Google Calendar.
+            </p>
+            
+            {(config.brandedShows || []).map((show, idx) => (
+              <div key={idx} style={{ marginBottom: '20px', padding: '15px', background: '#1a1a1a', borderRadius: '8px', border: '1px solid #333' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <h4 style={{ margin: 0, color: '#eab308' }}>Show #{idx + 1}</h4>
+                  <button type="button" onClick={() => handleRemoveBrandedShow(idx)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer' }}>Remove</button>
+                </div>
+                <div className={styles.inputGroup} style={{ marginBottom: '10px' }}>
+                  <label>Primary Show Name (Display Title)</label>
+                  <input type="text" value={show.primaryName} onChange={(e) => handleBrandedShowChange(idx, 'primaryName', e.target.value)} placeholder="e.g. Late Nights with John" />
+                </div>
+                <div className={styles.inputGroup} style={{ marginBottom: '10px' }}>
+                  <label>Calendar Matchers (Comma separated, * wildcard supported)</label>
+                  <input type="text" value={show.matchers} onChange={(e) => handleBrandedShowChange(idx, 'matchers', e.target.value)} placeholder="e.g. Late Nights With John*, Euno | Late Nights" />
+                </div>
+                <div className={styles.inputGroup}>
+                  <label>Show Logo Image URL</label>
+                  <input type="text" value={show.logoUrl} onChange={(e) => handleBrandedShowChange(idx, 'logoUrl', e.target.value)} placeholder="https://imgur.com/..." />
+                </div>
+              </div>
+            ))}
+
+            <button type="button" onClick={handleAddBrandedShow} className={styles.button} style={{ background: '#333', color: '#fff', marginTop: '10px' }}>
+              + Add Branded Show
+            </button>
           </div>
         </div>
 

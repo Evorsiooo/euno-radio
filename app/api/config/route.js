@@ -55,7 +55,8 @@ export async function GET(request) {
       bentoButtonLink: config.bentoButtonLink,
       discordBotCommand: config.discordBotCommand || '/setup',
       bufferTime: config.bufferTime || 4,
-      rotationFrequency: config.rotationFrequency || '0'
+      rotationFrequency: config.rotationFrequency || '0',
+      brandedShows: config.brandedShows || []
     };
     return NextResponse.json(publicConfig);
   }

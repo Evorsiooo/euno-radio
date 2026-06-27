@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './page.module.css';
 
@@ -59,14 +59,48 @@ export default function Home() {
       .catch(console.error);
   }, []);
 
+  const effectiveTrack = useMemo(() => {
+    let track = { ...icecastData.currentTrack };
+    if (calendarData.currentShow && publicConfig.brandedShows) {
+      const showName = calendarData.currentShow.name.toLowerCase();
+      for (const brandedShow of publicConfig.brandedShows) {
+        if (!brandedShow.matchers) continue;
+        const matchers = brandedShow.matchers.split(',').map(s => s.trim().toLowerCase());
+        let matched = false;
+        for (const matcher of matchers) {
+          if (matcher.endsWith('*')) {
+            const prefix = matcher.slice(0, -1);
+            if (showName.startsWith(prefix)) {
+              matched = true;
+              break;
+            }
+          } else if (showName === matcher) {
+            matched = true;
+            break;
+          }
+        }
+        if (matched) {
+          track = {
+            ...track,
+            title: brandedShow.primaryName,
+            artist: "Live Broadcast",
+            coverArt: brandedShow.logoUrl || track.coverArt
+          };
+          break;
+        }
+      }
+    }
+    return track;
+  }, [icecastData.currentTrack, calendarData.currentShow, publicConfig.brandedShows]);
+
   // Update document title dynamically
   useEffect(() => {
-    if (icecastData.currentTrack.title !== 'Loading...' && icecastData.currentTrack.title !== 'Offline') {
-      document.title = `${icecastData.currentTrack.title} - ${icecastData.currentTrack.artist}`;
+    if (effectiveTrack.title !== 'Loading...' && effectiveTrack.title !== 'Offline') {
+      document.title = `${effectiveTrack.title} - ${effectiveTrack.artist}`;
     } else {
       document.title = 'Euno Sonaris';
     }
-  }, [icecastData.currentTrack]);
+  }, [effectiveTrack]);
 
   useEffect(() => {
     if (publicConfig.streamUrl) {
@@ -440,7 +474,14 @@ export default function Home() {
                 <div className={styles.showRow}>
                   <div className={styles.showInfo}>
                     <div className={styles.showLabel}>ON AIR NOW</div>
-                    <div className={styles.showName}>{calendarData.currentShow.name}</div>
+                    <div className={styles.showName}>
+                      {calendarData.currentShow.name}
+                      {calendarData.currentShow.tag && (
+                        <span style={{ fontSize: '0.65rem', padding: '2px 6px', background: calendarData.currentShow.tag === 'Live Broadcast' ? '#eab308' : '#333', color: calendarData.currentShow.tag === 'Live Broadcast' ? '#000' : '#aaa', borderRadius: '4px', marginLeft: '8px', verticalAlign: 'middle', fontWeight: 'bold' }}>
+                          {calendarData.currentShow.tag === 'Live Broadcast' ? 'LIVE' : calendarData.currentShow.tag.toUpperCase()}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className={styles.showTime}>
                     {formatTime(calendarData.currentShow.start)} - {formatTime(calendarData.currentShow.end)}
@@ -459,10 +500,30 @@ export default function Home() {
                 <div className={styles.showRow}>
                   <div className={styles.showInfo}>
                     <div className={styles.showLabel}>UP NEXT</div>
-                    <div className={styles.showName}>{calendarData.nextShow.name}</div>
+                    <div className={styles.showName}>
+                      {calendarData.nextShow.name}
+                      {calendarData.nextShow.tag && (
+                        <span style={{ fontSize: '0.65rem', padding: '2px 6px', background: calendarData.nextShow.tag === 'Live Broadcast' ? '#eab308' : '#333', color: calendarData.nextShow.tag === 'Live Broadcast' ? '#000' : '#aaa', borderRadius: '4px', marginLeft: '8px', verticalAlign: 'middle', fontWeight: 'bold' }}>
+                          {calendarData.nextShow.tag === 'Live Broadcast' ? 'LIVE' : calendarData.nextShow.tag.toUpperCase()}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className={styles.showTime}>
                     Starts {formatTime(calendarData.nextShow.start)}
+                  </div>
+                </div>
+              )}
+
+              {calendarData.metrics && (
+                <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px solid #333', display: 'flex', gap: '20px', fontSize: '0.8rem', color: '#888' }}>
+                  <div>
+                    <strong style={{ color: '#fff', fontSize: '1.1rem' }}>{calendarData.metrics.liveCount}</strong>
+                    <div style={{ textTransform: 'uppercase', fontSize: '0.65rem', marginTop: '2px' }}>Live Shows (30 Days)</div>
+                  </div>
+                  <div>
+                    <strong style={{ color: '#fff', fontSize: '1.1rem' }}>{calendarData.metrics.automatedCount}</strong>
+                    <div style={{ textTransform: 'uppercase', fontSize: '0.65rem', marginTop: '2px' }}>Automated (30 Days)</div>
                   </div>
                 </div>
               )}
