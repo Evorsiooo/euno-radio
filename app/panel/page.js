@@ -58,7 +58,7 @@ export default function AdminPage() {
   const handleBrandedShowChange = (index, field, value) => {
     setConfig(prev => {
       const newShows = [...(prev.brandedShows || [])];
-      newShows[index][field] = value;
+      newShows[index] = { ...newShows[index], [field]: value };
       return { ...prev, brandedShows: newShows };
     });
   };
@@ -316,8 +316,13 @@ export default function AdminPage() {
                   <input type="text" value={show.primaryName} onChange={(e) => handleBrandedShowChange(idx, 'primaryName', e.target.value)} placeholder="e.g. Late Nights with John" />
                 </div>
                 <div className={styles.inputGroup} style={{ marginBottom: '10px' }}>
-                  <label>Calendar Matchers (Comma separated, * wildcard supported)</label>
-                  <input type="text" value={show.matchers} onChange={(e) => handleBrandedShowChange(idx, 'matchers', e.target.value)} placeholder="e.g. Late Nights With John*, Euno | Late Nights" />
+                  <label>Calendar Matchers (One per line, * wildcard supported)</label>
+                  <textarea 
+                    value={show.matchers} 
+                    onChange={(e) => handleBrandedShowChange(idx, 'matchers', e.target.value)} 
+                    placeholder="e.g. Late Nights With John*\nEuno | Late Nights" 
+                    style={{ width: '100%', padding: '8px', borderRadius: '4px', background: '#222', color: '#fff', border: '1px solid #444', minHeight: '60px', resize: 'vertical', fontFamily: 'monospace' }}
+                  />
                 </div>
                 <div className={styles.inputGroup}>
                   <label>Show Logo Image URL</label>

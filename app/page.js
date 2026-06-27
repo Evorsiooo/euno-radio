@@ -65,7 +65,7 @@ export default function Home() {
       const showName = calendarData.currentShow.name.toLowerCase();
       for (const brandedShow of publicConfig.brandedShows) {
         if (!brandedShow.matchers) continue;
-        const matchers = brandedShow.matchers.split(',').map(s => s.trim().toLowerCase());
+        const matchers = brandedShow.matchers.split('\n').map(s => s.trim().toLowerCase()).filter(s => s);
         let matched = false;
         for (const matcher of matchers) {
           if (matcher.endsWith('*')) {
