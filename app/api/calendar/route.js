@@ -27,7 +27,6 @@ export async function GET() {
     const data = await res.json();
     const events = data.items || [];
 
-    const now = new Date();
     let currentShow = null;
     let nextShow = null;
     let metrics = { liveCount: 0, automatedCount: 0 };
