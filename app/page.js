@@ -270,7 +270,7 @@ export default function Home() {
         <div className={styles.miniContainer}>
           <AnimatePresence mode="popLayout">
             <motion.div 
-              key={icecastData.currentTrack.coverArt}
+              key={effectiveTrack.coverArt}
               initial={{ opacity: 0, x: -30, filter: 'blur(5px)' }}
               animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
               exit={{ opacity: 0, x: 30, filter: 'blur(5px)' }}
@@ -278,7 +278,7 @@ export default function Home() {
               className={styles.miniArtWrapper}
             >
               <img 
-                src={icecastData.currentTrack.coverArt || '/default-album-art.svg'} 
+                src={effectiveTrack.coverArt || '/default-album-art.svg'} 
                 alt="Album Art" 
                 className={styles.miniArt} 
               />
@@ -287,26 +287,26 @@ export default function Home() {
           <div className={styles.miniInfo}>
             <AnimatePresence mode="popLayout">
               <motion.div 
-                key={icecastData.currentTrack.title} 
+                key={effectiveTrack.title} 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
                 className={styles.miniTitle}
               >
-                {icecastData.currentTrack.title}
+                {effectiveTrack.title}
               </motion.div>
             </AnimatePresence>
             <AnimatePresence mode="popLayout">
               <motion.div 
-                key={icecastData.currentTrack.artist} 
+                key={effectiveTrack.artist} 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
                 className={styles.miniArtist}
               >
-                {icecastData.currentTrack.artist}
+                {effectiveTrack.artist}
               </motion.div>
             </AnimatePresence>
           </div>
@@ -351,7 +351,7 @@ export default function Home() {
           <div className={styles.albumSide}>
             <AnimatePresence mode="popLayout">
               <motion.div 
-                key={icecastData.currentTrack.coverArt}
+                key={effectiveTrack.coverArt}
                 initial={{ opacity: 0, x: -30, filter: 'blur(5px)' }}
                 animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, x: 30, filter: 'blur(5px)' }}
@@ -359,7 +359,7 @@ export default function Home() {
                 className={styles.albumArtWrapper}
               >
                 <img 
-                  src={icecastData.currentTrack.coverArt || '/default-album-art.svg'} 
+                  src={effectiveTrack.coverArt || '/default-album-art.svg'} 
                   alt="Album Art" 
                   className={styles.albumArt} 
                 />
@@ -403,26 +403,26 @@ export default function Home() {
             
             <AnimatePresence mode="popLayout">
               <motion.div 
-                key={icecastData.currentTrack.title} 
+                key={effectiveTrack.title} 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
                 className={styles.songTitle}
               >
-                {icecastData.currentTrack.title}
+                {effectiveTrack.title}
               </motion.div>
             </AnimatePresence>
             <AnimatePresence mode="popLayout">
               <motion.div 
-                key={icecastData.currentTrack.artist} 
+                key={effectiveTrack.artist} 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
                 className={styles.artistName}
               >
-                {icecastData.currentTrack.artist}
+                {effectiveTrack.artist}
               </motion.div>
             </AnimatePresence>
 
