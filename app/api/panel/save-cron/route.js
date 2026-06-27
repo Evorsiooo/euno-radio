@@ -31,7 +31,7 @@ export async function POST(request) {
   }
 
   try {
-    const { frequency } = await request.json(); // "0", "12", "24", "48", "72"
+    const { frequency, rotationTimeUtc } = await request.json(); // "0", "12", "24", "48", "72"
 
     // If turned off, remove the cron file
     if (!frequency || frequency === "0") {
@@ -41,13 +41,24 @@ export async function POST(request) {
       return NextResponse.json({ success: true, message: 'Cron removed' });
     }
 
+    // Parse time
+    let minute = "0";
+    let hour = "0";
+    if (rotationTimeUtc && frequency !== "12") {
+      const parts = rotationTimeUtc.split(':');
+      if (parts.length === 2) {
+        hour = parseInt(parts[0], 10).toString();
+        minute = parseInt(parts[1], 10).toString();
+      }
+    }
+
     // Determine cron expression based on frequency in hours
     let cronExpr = "";
     switch (frequency) {
       case "12": cronExpr = "0 */12 * * *"; break;
-      case "24": cronExpr = "0 0 * * *"; break;
-      case "48": cronExpr = "0 0 */2 * *"; break;
-      case "72": cronExpr = "0 0 */3 * *"; break;
+      case "24": cronExpr = `${minute} ${hour} * * *`; break;
+      case "48": cronExpr = `${minute} ${hour} */2 * *`; break;
+      case "72": cronExpr = `${minute} ${hour} */3 * *`; break;
       default:
         return NextResponse.json({ error: 'Invalid frequency' }, { status: 400 });
     }

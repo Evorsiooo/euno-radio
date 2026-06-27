@@ -87,6 +87,16 @@ export default function AdminPage() {
       });
       
       if (res.ok) {
+        if (config.rotationFrequency !== undefined) {
+          await fetch('/api/panel/save-cron', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ frequency: config.rotationFrequency, rotationTimeUtc: config.rotationTimeUtc })
+          });
+        }
         setMessage({ type: 'success', text: 'Configuration saved successfully!' });
       } else {
         setMessage({ type: 'error', text: 'Failed to save configuration.' });
@@ -138,7 +148,7 @@ export default function AdminPage() {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ frequency: config.rotationFrequency })
+            body: JSON.stringify({ frequency: config.rotationFrequency, rotationTimeUtc: config.rotationTimeUtc })
           });
         }
         setNewPassword(data.newPassword);
@@ -246,6 +256,16 @@ export default function AdminPage() {
                 <option value="72">Every 72 Hours</option>
               </select>
             </div>
+
+            {config.rotationFrequency && config.rotationFrequency !== '0' && config.rotationFrequency !== '12' && (
+              <div className={styles.inputGroup} style={{ marginBottom: '20px' }}>
+                <label>Rotation Time (UTC)</label>
+                <input type="time" name="rotationTimeUtc" value={config.rotationTimeUtc || '00:00'} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '4px', background: '#111', color: '#fff', border: '1px solid #333' }} />
+                <div style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '5px' }}>
+                  Choose the exact time of day (in UTC) you want the script to rotate the password.
+                </div>
+              </div>
+            )}
 
             <button 
               className={styles.button} 

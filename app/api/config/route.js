@@ -56,6 +56,7 @@ export async function GET(request) {
       discordBotCommand: config.discordBotCommand || '/setup',
       bufferTime: config.bufferTime || 4,
       rotationFrequency: config.rotationFrequency || '0',
+      rotationTimeUtc: config.rotationTimeUtc || '00:00',
       brandedShows: config.brandedShows || []
     };
     return NextResponse.json(publicConfig);

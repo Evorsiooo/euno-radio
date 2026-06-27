@@ -13,7 +13,21 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Euno Sonaris",
-  description: "Icecast Radio Player",
+  description: "Ro-State Web Radio",
+  openGraph: {
+    title: "Euno Sonaris",
+    description: "Ro-State Web Radio",
+    siteName: "Euno Sonaris",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Euno Sonaris",
+    description: "Ro-State Web Radio",
+  }
+};
+
+export const viewport = {
+  themeColor: '#00e88f',
 };
 
 export default function RootLayout({ children }) {
