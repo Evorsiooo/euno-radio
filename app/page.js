@@ -46,10 +46,8 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    // Check if we are running in the popup window by checking if window has an opener AND matches standard popup sizes
-    // Just measuring window size allows extreme resizability testing in regular browser.
-    // If the user explicitly wants a popup, we check window.opener.
-    if (window.opener || (window.innerWidth < 500 && window.innerHeight < 500)) {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('mini') === 'true' || (window.innerWidth < 500 && window.innerHeight < 500)) {
       setIsMini(true);
     }
 
@@ -248,8 +246,9 @@ export default function Home() {
   };
 
   const openMiniPlayer = () => {
-    // Open the current URL with a query param or just small dimensions
-    window.open(window.location.href, 'MiniPlayer', 'width=350,height=450,menubar=no,toolbar=no,location=no,status=no,resizable=yes');
+    const miniUrl = new URL(window.location.href);
+    miniUrl.searchParams.set('mini', 'true');
+    window.open(miniUrl.toString(), 'MiniPlayer', 'width=350,height=450,menubar=no,toolbar=no,location=no,status=no,resizable=yes');
   };
 
   const handleHistoryUp = () => {
