@@ -608,7 +608,19 @@ export default function AdminPage() {
             <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ background: '#18181a', width: '90%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '12px', border: '1px solid #333', padding: '25px', position: 'relative' }}>
                 <button onClick={() => setExpandedLink(null)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
-                <h3 style={{ marginBottom: '20px', color: '#eab308' }}>Link Details</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingRight: '30px' }}>
+                  <h3 style={{ margin: 0, color: '#eab308' }}>Link Details</h3>
+                  <button 
+                    onClick={() => {
+                      const fullUrl = `${window.location.origin}/link/${expandedLink}`;
+                      navigator.clipboard.writeText(fullUrl);
+                      setMessage({ type: 'success', text: 'Link copied to clipboard!' });
+                    }}
+                    style={{ background: '#333', color: '#fff', border: '1px solid #444', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                  >
+                    Copy Link
+                  </button>
+                </div>
                 
                 <form onSubmit={handleUpdateLink} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '30px' }}>
                   <div className={styles.inputGroup}>
