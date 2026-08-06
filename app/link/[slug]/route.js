@@ -6,7 +6,8 @@ const LINKS_PATH = path.join(process.cwd(), 'data', 'links.json');
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request, { params }) {
+export async function GET(request, props) {
+  const params = await props.params;
   const { slug } = params;
   
   const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000';

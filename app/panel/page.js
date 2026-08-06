@@ -2,15 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import styles from './admin.module.css';
 
 export default function AdminPage() {
   const [token, setToken] = useState('');
   const [activeTab, setActiveTab] = useState('site');
   const [links, setLinks] = useState([]);
-  const [newLink, setNewLink] = useState({ slug: '', url: '' });
+  const [newLink, setNewLink] = useState({ slug: '', url: '', notes: '' });
   const [expandedLink, setExpandedLink] = useState(null);
-  const [editLinkData, setEditLinkData] = useState({ originalSlug: '', slug: '', url: '' });
+  const [editLinkData, setEditLinkData] = useState({ originalSlug: '', slug: '', url: '', notes: '' });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -60,7 +61,7 @@ export default function AdminPage() {
         body: JSON.stringify(newLink)
       });
       if (res.ok) {
-        setNewLink({ slug: '', url: '' });
+        setNewLink({ slug: '', url: '', notes: '' });
         fetchLinks(token);
         setMessage({ type: 'success', text: 'Link created!' });
       } else {
@@ -563,6 +564,10 @@ export default function AdminPage() {
                   <label>Custom Slug (Optional)</label>
                   <input type="text" value={newLink.slug} onChange={e => setNewLink({...newLink, slug: e.target.value})} placeholder="e.g. euno-discord-server (Leave blank for random)" />
                 </div>
+                <div className={styles.inputGroup}>
+                  <label>Notes (Optional)</label>
+                  <input type="text" value={newLink.notes} onChange={e => setNewLink({...newLink, notes: e.target.value})} placeholder="Why does this link exist?" />
+                </div>
                 <button type="submit" className={styles.button} disabled={loading}>
                   {loading ? 'Creating...' : 'Create Link'}
                 </button>
@@ -580,67 +585,90 @@ export default function AdminPage() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {links.map(link => (
-                    <div key={link.slug} style={{ display: 'flex', flexDirection: 'column', background: '#222', borderRadius: '8px', border: '1px solid #333', overflow: 'hidden' }}>
-                      <div 
-                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', cursor: 'pointer' }}
-                        onClick={() => {
-                          if (expandedLink === link.slug) setExpandedLink(null);
-                          else {
-                            setExpandedLink(link.slug);
-                            setEditLinkData({ originalSlug: link.slug, slug: link.slug, url: link.url });
-                          }
-                        }}
-                      >
-                        <div>
-                          <div style={{ color: '#eab308', fontWeight: 'bold', fontSize: '1.1rem' }}>euno.cc/link/{link.slug}</div>
-                          <div style={{ color: '#aaa', fontSize: '0.85rem' }}>{link.url}</div>
-                          <div style={{ marginTop: '5px', fontSize: '0.9rem' }}>Clicks: <span style={{ color: '#4ade80' }}>{link.clicks}</span></div>
-                        </div>
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                          <span style={{ fontSize: '1.5rem', color: '#888' }}>{expandedLink === link.slug ? '▲' : '▼'}</span>
-                        </div>
+                    <div key={link.slug} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#222', padding: '15px', borderRadius: '8px', border: '1px solid #333', cursor: 'pointer' }}
+                         onClick={() => {
+                           setExpandedLink(link.slug);
+                           setEditLinkData({ originalSlug: link.slug, slug: link.slug, url: link.url, notes: link.notes || '' });
+                         }}>
+                      <div>
+                        <div style={{ color: '#eab308', fontWeight: 'bold', fontSize: '1.1rem' }}>euno.cc/link/{link.slug}</div>
+                        <div style={{ color: '#aaa', fontSize: '0.85rem' }}>{link.url}</div>
+                        <div style={{ marginTop: '5px', fontSize: '0.9rem' }}>Clicks: <span style={{ color: '#4ade80' }}>{link.clicks}</span></div>
                       </div>
-                      
-                      {expandedLink === link.slug && (
-                        <div style={{ padding: '15px', borderTop: '1px solid #333', background: '#1a1a1c' }}>
-                          <h4 style={{ marginBottom: '15px', color: '#fff' }}>Edit Link</h4>
-                          <form onSubmit={handleUpdateLink} style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-                            <div className={styles.inputGroup}>
-                              <label>Slug</label>
-                              <input type="text" value={editLinkData.slug} onChange={e => setEditLinkData({...editLinkData, slug: e.target.value})} required />
-                            </div>
-                            <div className={styles.inputGroup}>
-                              <label>Target URL</label>
-                              <input type="url" value={editLinkData.url} onChange={e => setEditLinkData({...editLinkData, url: e.target.value})} required />
-                            </div>
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                              <button type="submit" className={styles.button} disabled={loading}>Save Changes</button>
-                              <button type="button" onClick={() => handleDeleteLink(link.slug)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Delete Link</button>
-                            </div>
-                          </form>
-                          
-                          <h4 style={{ marginBottom: '10px', color: '#fff' }}>Recent Clicks</h4>
-                          <div style={{ maxHeight: '200px', overflowY: 'auto', background: '#111', padding: '10px', borderRadius: '4px' }}>
-                            {(!link.clickLogs || link.clickLogs.length === 0) ? (
-                              <div style={{ color: '#aaa', fontSize: '0.85rem' }}>No clicks recorded yet.</div>
-                            ) : (
-                              [...link.clickLogs].reverse().map((log, i) => (
-                                <div key={i} style={{ borderBottom: '1px solid #333', padding: '8px 0', fontSize: '0.85rem' }}>
-                                  <div style={{ color: '#4ade80' }}>{new Date(log.timestamp).toLocaleString()}</div>
-                                  <div style={{ color: '#aaa' }}>IP: {log.ip}</div>
-                                  <div style={{ color: '#888', wordBreak: 'break-all' }}>{log.userAgent}</div>
-                                </div>
-                              ))
-                            )}
-                          </div>
-                        </div>
-                      )}
+                      <button onClick={(e) => { e.stopPropagation(); handleDeleteLink(link.slug); }} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
                     </div>
                   ))}
                 </div>
               )}
             </div>
           </div>
+
+          {/* LINK MODAL */}
+          {expandedLink && (
+            <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ background: '#18181a', width: '90%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '12px', border: '1px solid #333', padding: '25px', position: 'relative' }}>
+                <button onClick={() => setExpandedLink(null)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+                <h3 style={{ marginBottom: '20px', color: '#eab308' }}>Link Details</h3>
+                
+                <form onSubmit={handleUpdateLink} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '30px' }}>
+                  <div className={styles.inputGroup}>
+                    <label>Slug</label>
+                    <input type="text" value={editLinkData.slug} onChange={e => setEditLinkData({...editLinkData, slug: e.target.value})} required />
+                  </div>
+                  <div className={styles.inputGroup}>
+                    <label>Target URL</label>
+                    <input type="url" value={editLinkData.url} onChange={e => setEditLinkData({...editLinkData, url: e.target.value})} required />
+                  </div>
+                  <div className={styles.inputGroup}>
+                    <label>Notes</label>
+                    <textarea value={editLinkData.notes} onChange={e => setEditLinkData({...editLinkData, notes: e.target.value})} style={{ background: '#111', color: '#fff', border: '1px solid #333', padding: '10px', borderRadius: '4px', minHeight: '60px' }} />
+                  </div>
+                  <button type="submit" className={styles.button} disabled={loading}>Save Changes</button>
+                </form>
+
+                <h3 style={{ marginBottom: '15px', color: '#fff' }}>Click Analytics</h3>
+                {(() => {
+                  const activeLinkObj = links.find(l => l.slug === expandedLink);
+                  if (!activeLinkObj || !activeLinkObj.clickLogs || activeLinkObj.clickLogs.length === 0) {
+                    return <p style={{ color: '#aaa' }}>No clicks yet.</p>;
+                  }
+                  
+                  // Group clicks by date
+                  const clicksByDate = {};
+                  activeLinkObj.clickLogs.forEach(log => {
+                    const d = log.timestamp.split('T')[0];
+                    clicksByDate[d] = (clicksByDate[d] || 0) + 1;
+                  });
+                  const chartData = Object.entries(clicksByDate).map(([date, count]) => ({ date, clicks: count }));
+                  
+                  return (
+                    <>
+                      <div style={{ height: '250px', marginBottom: '20px', width: '100%', minWidth: '300px' }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={chartData}>
+                            <XAxis dataKey="date" stroke="#888" />
+                            <YAxis stroke="#888" />
+                            <Tooltip contentStyle={{ background: '#222', border: 'none' }} />
+                            <Line type="monotone" dataKey="clicks" stroke="#81dc62" strokeWidth={3} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                      
+                      <h4 style={{ marginBottom: '10px', color: '#aaa' }}>Recent Activity</h4>
+                      <div style={{ maxHeight: '150px', overflowY: 'auto', background: '#111', padding: '10px', borderRadius: '4px' }}>
+                        {[...activeLinkObj.clickLogs].reverse().map((log, i) => (
+                          <div key={i} style={{ borderBottom: '1px solid #333', padding: '8px 0', fontSize: '0.85rem' }}>
+                            <div style={{ color: '#4ade80' }}>{new Date(log.timestamp).toLocaleString()}</div>
+                            <div style={{ color: '#aaa' }}>IP: {log.ip}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

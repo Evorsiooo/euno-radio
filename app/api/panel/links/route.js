@@ -40,7 +40,7 @@ export async function GET(req) {
 export async function POST(req) {
   if (!isAuthorized(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
-    const { slug, url } = await req.json();
+    const { slug, url, notes } = await req.json();
     if (!url) return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     
     const data = readLinks();
@@ -59,6 +59,7 @@ export async function POST(req) {
     data.links.push({
       slug: finalSlug,
       url,
+      notes: notes || '',
       clicks: 0,
       createdAt: new Date().toISOString()
     });
@@ -96,7 +97,7 @@ export async function DELETE(req) {
 export async function PUT(req) {
   if (!isAuthorized(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
-    const { originalSlug, slug, url } = await req.json();
+    const { originalSlug, slug, url, notes } = await req.json();
     if (!originalSlug || !url || !slug) return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     
     const data = readLinks();
@@ -111,6 +112,7 @@ export async function PUT(req) {
     
     data.links[linkIndex].slug = slug;
     data.links[linkIndex].url = url;
+    if (notes !== undefined) data.links[linkIndex].notes = notes;
     
     if (writeLinks(data)) {
       return NextResponse.json({ success: true, slug });
