@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FloatingNav from './components/FloatingNav';
 import styles from './page.module.css';
 
 // SVG Icons
@@ -342,8 +343,9 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
+      {!isMini && <FloatingNav />}
       {/* SECTION 1: Radio Player */}
-      <section className={styles.section}>
+      <section className={styles.section} id="radio">
         <div className={styles.radioContainer}>
           
           {/* Left: Album Art & Controls */}
@@ -537,7 +539,7 @@ export default function Home() {
       </section>
 
       {/* SECTION 2: Bento Grid */}
-      <section className={styles.section}>
+      <section className={styles.section} id="links">
         <div className={styles.bentoGrid}>
           
           <div className={`${styles.bentoCard} ${styles.topLeft}`}>

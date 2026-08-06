@@ -1,10 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import styles from './admin.module.css';
 
 export default function AdminPage() {
   const [token, setToken] = useState('');
+  const [activeTab, setActiveTab] = useState('site');
+  const [links, setLinks] = useState([]);
+  const [newLink, setNewLink] = useState({ slug: '', url: '' });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -12,6 +16,70 @@ export default function AdminPage() {
   const [newPassword, setNewPassword] = useState('');
   const [isClearing, setIsClearing] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+
+  
+  useEffect(() => {
+    const savedToken = localStorage.getItem('adminToken');
+    if (savedToken) {
+      setToken(savedToken);
+      fetch('/api/config', { headers: { 'Authorization': `Bearer ${savedToken}` } })
+        .then(res => {
+          if (res.ok) {
+            return res.json().then(data => {
+              if (data.icecastAdminUrl !== undefined) {
+                setConfig(data);
+                setIsAuthenticated(true);
+                fetchLinks(savedToken);
+              }
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
+
+  const fetchLinks = async (authToken) => {
+    try {
+      const res = await fetch('/api/panel/links', { headers: { 'Authorization': `Bearer ${authToken}` } });
+      if (res.ok) {
+        const data = await res.json();
+        setLinks(data.links || []);
+      }
+    } catch(err) {}
+  };
+
+  const handleCreateLink = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch('/api/panel/links', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(newLink)
+      });
+      if (res.ok) {
+        setNewLink({ slug: '', url: '' });
+        fetchLinks(token);
+        setMessage({ type: 'success', text: 'Link created!' });
+      } else {
+        setMessage({ type: 'error', text: 'Failed to create link' });
+      }
+    } catch(err) {}
+    setLoading(false);
+  };
+
+  const handleDeleteLink = async (slug) => {
+    if (!confirm('Delete this link?')) return;
+    try {
+      const res = await fetch(`/api/panel/links?slug=${slug}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchLinks(token);
+      }
+    } catch(err) {}
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -31,6 +99,8 @@ export default function AdminPage() {
         if (data.icecastAdminUrl !== undefined) {
           setConfig(data);
           setIsAuthenticated(true);
+          localStorage.setItem('adminToken', token);
+          fetchLinks(token);
         } else {
           setMessage({ type: 'error', text: 'Invalid Token' });
         }
@@ -192,8 +262,19 @@ export default function AdminPage() {
   }
 
   return (
+    
     <div className={styles.container}>
-      <h1 className={styles.title}>Dashboard</h1>
+      <div className={styles.headerRow}>
+        <h1 className={styles.title} style={{ margin: 0 }}>Dashboard</h1>
+        <Link href="/" className={styles.button} style={{ textDecoration: 'none' }}>Back to Radio</Link>
+      </div>
+      
+      <div className={styles.tabsContainer}>
+        <button className={`${styles.tab} ${activeTab === 'site' ? styles.activeTab : ''}`} onClick={() => setActiveTab('site')}>Site Settings</button>
+        <button className={`${styles.tab} ${activeTab === 'radio' ? styles.activeTab : ''}`} onClick={() => setActiveTab('radio')}>Radio Settings</button>
+        <button className={`${styles.tab} ${activeTab === 'advertiser' ? styles.activeTab : ''}`} onClick={() => setActiveTab('advertiser')}>Advertiser Settings</button>
+        <button className={`${styles.tab} ${activeTab === 'link' ? styles.activeTab : ''}`} onClick={() => setActiveTab('link')}>Link Tracker</button>
+      </div>
       
       {message.text && (
         <div className={`${styles.message} ${styles[message.type]}`}>
@@ -201,7 +282,10 @@ export default function AdminPage() {
         </div>
       )}
 
+
       <form onSubmit={handleSave} className={styles.settingsForm}>
+        {activeTab === 'radio' && (
+          <>
         <div className={styles.card}>
           <div className={styles.settingsSection}>
             <h3>Icecast Settings</h3>
@@ -393,11 +477,15 @@ export default function AdminPage() {
                 disabled={isClearing}
               >
                 {isClearing ? 'Clearing...' : 'Clear Album Art Cache'}
-              </button>
+                            </button>
             </div>
           </div>
         </div>
+        </>
+        )}
 
+        {activeTab === 'site' && (
+          <>
         <div className={styles.card}>
           <div className={styles.settingsSection}>
             <h3>Bento Grid Links & Integration</h3>
@@ -413,13 +501,78 @@ export default function AdminPage() {
               <label>Discord Server Link</label>
               <input type="text" name="discordServerLink" value={config.discordServerLink || ''} onChange={handleChange} />
             </div>
-          </div>
+                    </div>
         </div>
+        </>
+        )}
 
+        {(activeTab === 'site' || activeTab === 'radio') && (
         <button type="submit" className={styles.button} disabled={loading}>
           {loading ? 'Saving...' : 'Save Configuration'}
         </button>
+        )}
       </form>
+
+      {activeTab === 'advertiser' && (
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div className={styles.cardTitle}>Advertiser Settings</div>
+          </div>
+          <div className={styles.cardBody}>
+            <p style={{ color: '#aaa', fontSize: '0.9rem' }}>This section is currently empty. Future advertiser settings will go here.</p>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'link' && (
+        <div>
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardTitle}>Create New Shortlink</div>
+            </div>
+            <div className={styles.cardBody}>
+              <form onSubmit={handleCreateLink} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <div className={styles.inputGroup}>
+                  <label>Target URL</label>
+                  <input type="url" value={newLink.url} onChange={e => setNewLink({...newLink, url: e.target.value})} placeholder="https://discord.gg/..." required />
+                </div>
+                <div className={styles.inputGroup}>
+                  <label>Custom Slug (Optional)</label>
+                  <input type="text" value={newLink.slug} onChange={e => setNewLink({...newLink, slug: e.target.value})} placeholder="e.g. euno-discord-server (Leave blank for random)" />
+                </div>
+                <button type="submit" className={styles.button} disabled={loading}>
+                  {loading ? 'Creating...' : 'Create Link'}
+                </button>
+              </form>
+            </div>
+          </div>
+          
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardTitle}>Active Links</div>
+            </div>
+            <div className={styles.cardBody}>
+              {links.length === 0 ? (
+                <p style={{ color: '#aaa' }}>No links created yet.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {links.map(link => (
+                    <div key={link.slug} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#222', padding: '15px', borderRadius: '8px', border: '1px solid #333' }}>
+                      <div>
+                        <div style={{ color: '#eab308', fontWeight: 'bold', fontSize: '1.1rem' }}>euno.cc/link/{link.slug}</div>
+                        <div style={{ color: '#aaa', fontSize: '0.85rem' }}>{link.url}</div>
+                        <div style={{ marginTop: '5px', fontSize: '0.9rem' }}>Clicks: <span style={{ color: '#4ade80' }}>{link.clicks}</span></div>
+                      </div>
+                      <button onClick={() => handleDeleteLink(link.slug)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

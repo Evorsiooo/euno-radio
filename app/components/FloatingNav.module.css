@@ -1,0 +1,40 @@
+.navContainer {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  background: rgba(24, 24, 26, 0.7);
+  backdrop-filter: blur(10px);
+  padding: 10px 20px;
+  border-radius: 30px;
+  border: 1px solid var(--border-color);
+  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.navLink {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+
+.navLink:hover {
+  color: var(--text-primary);
+  background: var(--hover-bg);
+}
+
+.panelBtn {
+  background: var(--accent-color);
+  color: #000;
+  font-weight: 600;
+}
+
+.panelBtn:hover {
+  background: #6fc850;
+  color: #000;
+}
