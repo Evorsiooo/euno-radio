@@ -92,3 +92,32 @@ export async function DELETE(req) {
   }
   return NextResponse.json({ error: 'Failed to write' }, { status: 500 });
 }
+
+export async function PUT(req) {
+  if (!isAuthorized(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    const { originalSlug, slug, url } = await req.json();
+    if (!originalSlug || !url || !slug) return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+    
+    const data = readLinks();
+    
+    // Check if new slug conflicts with another link
+    if (slug !== originalSlug && data.links.find(l => l.slug === slug)) {
+      return NextResponse.json({ error: 'New slug already exists' }, { status: 400 });
+    }
+    
+    const linkIndex = data.links.findIndex(l => l.slug === originalSlug);
+    if (linkIndex === -1) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    
+    data.links[linkIndex].slug = slug;
+    data.links[linkIndex].url = url;
+    
+    if (writeLinks(data)) {
+      return NextResponse.json({ success: true, slug });
+    }
+    return NextResponse.json({ error: 'Failed to write' }, { status: 500 });
+  } catch(err) {
+    return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
+  }
+}
+
