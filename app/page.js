@@ -28,11 +28,15 @@ export default function Home() {
   const [historyIndex, setHistoryIndex] = useState(0);
   const audioRef = useRef(null);
   const isPlayingRef = useRef(false);
+  const isReconnectingRef = useRef(false);
+  const stallTimeoutRef = useRef(null);
+  const watchdogIntervalRef = useRef(null);
+  const lastTimeRef = useRef(0);
+  const stalledCountRef = useRef(0);
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
-  
   
   // For detecting mini player window
   const [isMini, setIsMini] = useState(false);
@@ -101,49 +105,160 @@ export default function Home() {
     }
   }, [effectiveTrack]);
 
+  const reconnectStream = () => {
+    if (!isPlayingRef.current || isReconnectingRef.current || !publicConfig.streamUrl) return;
+    isReconnectingRef.current = true;
+    setIsReloading(true);
+    setIsLoading(true);
+
+    if (stallTimeoutRef.current) {
+      clearTimeout(stallTimeoutRef.current);
+      stallTimeoutRef.current = null;
+    }
+
+    const audio = audioRef.current;
+    if (audio) {
+      try {
+        audio.pause();
+      } catch (e) {}
+
+      setTimeout(() => {
+        if (!isPlayingRef.current || !audioRef.current) {
+          isReconnectingRef.current = false;
+          setIsReloading(false);
+          setIsLoading(false);
+          return;
+        }
+
+        const timestamp = Date.now();
+        const baseUrl = publicConfig.streamUrl.split('?')[0];
+        audioRef.current.src = `${baseUrl}?t=${timestamp}`;
+        audioRef.current.load();
+        
+        audioRef.current.play()
+          .then(() => {
+            isReconnectingRef.current = false;
+            setIsReloading(false);
+            setIsLoading(false);
+          })
+          .catch((err) => {
+            console.warn("Auto-reconnect attempt failed, scheduling retry in 2.5s...", err);
+            isReconnectingRef.current = false;
+            if (isPlayingRef.current) {
+              setTimeout(() => {
+                if (isPlayingRef.current) reconnectStream();
+              }, 2500);
+            } else {
+              setIsReloading(false);
+              setIsLoading(false);
+            }
+          });
+      }, 1500);
+    } else {
+      isReconnectingRef.current = false;
+    }
+  };
+
   useEffect(() => {
     if (publicConfig.streamUrl) {
       if (audioRef.current) {
         audioRef.current.pause();
+        audioRef.current.src = '';
       }
       const audio = new Audio(publicConfig.streamUrl);
       audio.volume = volume;
       
+      const handleWaitingOrStall = () => {
+        if (!isPlayingRef.current) {
+          setIsLoading(false);
+          return;
+        }
+        setIsLoading(true);
+        if (!stallTimeoutRef.current && !isReconnectingRef.current) {
+          stallTimeoutRef.current = setTimeout(() => {
+            stallTimeoutRef.current = null;
+            if (isPlayingRef.current && !isReconnectingRef.current) {
+              reconnectStream();
+            }
+          }, 3500);
+        }
+      };
+
+      const handlePlaying = () => {
+        setIsLoading(false);
+        setIsReloading(false);
+        if (stallTimeoutRef.current) {
+          clearTimeout(stallTimeoutRef.current);
+          stallTimeoutRef.current = null;
+        }
+      };
+
+      const handleTimeUpdate = () => {
+        if (stallTimeoutRef.current) {
+          clearTimeout(stallTimeoutRef.current);
+          stallTimeoutRef.current = null;
+        }
+        if (isLoading) {
+          setIsLoading(false);
+          setIsReloading(false);
+        }
+      };
+
       const handleErrorOrDrop = () => {
         if (!isPlayingRef.current) {
           setIsLoading(false);
           return;
         }
-        setIsReloading(true);
-        setIsLoading(true);
-        setTimeout(() => {
-          if (audioRef.current && isPlayingRef.current) {
-            const timestamp = new Date().getTime();
-            const baseUrl = publicConfig.streamUrl.split('?')[0];
-            audioRef.current.src = `${baseUrl}?t=${timestamp}`;
-            audioRef.current.load();
-            audioRef.current.play().catch(err => {
-              console.error("Auto-reconnect failed", err);
-              setIsPlaying(false);
-              setIsLoading(false);
-              setIsReloading(false);
-            }).then(() => {
-              setIsReloading(false);
-            });
-          } else {
-             setIsReloading(false);
-             setIsLoading(false);
-          }
-        }, 2500);
+        reconnectStream();
       };
 
-      audio.addEventListener('waiting', () => setIsLoading(true));
-      audio.addEventListener('playing', () => { setIsLoading(false); setIsReloading(false); });
-      audio.addEventListener('pause', () => setIsLoading(false));
+      audio.addEventListener('waiting', handleWaitingOrStall);
+      audio.addEventListener('stalled', handleWaitingOrStall);
+      audio.addEventListener('playing', handlePlaying);
+      audio.addEventListener('timeupdate', handleTimeUpdate);
+      audio.addEventListener('pause', () => {
+        if (stallTimeoutRef.current) {
+          clearTimeout(stallTimeoutRef.current);
+          stallTimeoutRef.current = null;
+        }
+        setIsLoading(false);
+      });
       audio.addEventListener('error', handleErrorOrDrop);
       audio.addEventListener('ended', handleErrorOrDrop);
       
       audioRef.current = audio;
+
+      // Watchdog to catch silent freezing during DJ / AutoDJ stream handovers
+      watchdogIntervalRef.current = setInterval(() => {
+        if (isPlayingRef.current && audioRef.current && !audioRef.current.paused) {
+          const curTime = audioRef.current.currentTime;
+          if (curTime > 0 && curTime === lastTimeRef.current) {
+            stalledCountRef.current += 1;
+            if (stalledCountRef.current >= 2 && !isReconnectingRef.current) {
+              reconnectStream();
+              stalledCountRef.current = 0;
+            }
+          } else {
+            stalledCountRef.current = 0;
+            lastTimeRef.current = curTime;
+          }
+        } else {
+          stalledCountRef.current = 0;
+        }
+      }, 2000);
+
+      return () => {
+        if (stallTimeoutRef.current) clearTimeout(stallTimeoutRef.current);
+        if (watchdogIntervalRef.current) clearInterval(watchdogIntervalRef.current);
+        audio.removeEventListener('waiting', handleWaitingOrStall);
+        audio.removeEventListener('stalled', handleWaitingOrStall);
+        audio.removeEventListener('playing', handlePlaying);
+        audio.removeEventListener('timeupdate', handleTimeUpdate);
+        audio.removeEventListener('error', handleErrorOrDrop);
+        audio.removeEventListener('ended', handleErrorOrDrop);
+        audio.pause();
+        audio.src = '';
+      };
     }
   }, [publicConfig.streamUrl]);
 
@@ -163,7 +278,7 @@ export default function Home() {
   useEffect(() => {
     const fetchIcecast = async () => {
       try {
-        const res = await fetch('/api/icecast');
+        const res = await fetch('/api/icecast', { cache: 'no-store' });
         const data = await res.json();
         if (data.status === 'online' || data.status === 'offline') {
           setIcecastData({
@@ -176,7 +291,7 @@ export default function Home() {
 
     const fetchCalendar = async () => {
       try {
-        const res = await fetch('/api/calendar');
+        const res = await fetch('/api/calendar', { cache: 'no-store' });
         const data = await res.json();
         setCalendarData(data);
       } catch (err) {}
@@ -186,7 +301,7 @@ export default function Home() {
     fetchCalendar();
 
     const icecastInterval = setInterval(fetchIcecast, 10000);
-    const calendarInterval = setInterval(fetchCalendar, 60000);
+    const calendarInterval = setInterval(fetchCalendar, 15000);
 
     return () => {
       clearInterval(icecastInterval);
@@ -200,8 +315,15 @@ export default function Home() {
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
+      setIsLoading(false);
+      setIsReloading(false);
+      if (stallTimeoutRef.current) {
+        clearTimeout(stallTimeoutRef.current);
+        stallTimeoutRef.current = null;
+      }
     } else {
       setIsLoading(true);
+      audioRef.current.volume = volume;
       audioRef.current.load();
       audioRef.current.play()
         .then(() => setIsPlaying(true))

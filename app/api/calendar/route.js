@@ -7,9 +7,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    // We want events from right now to 30 days in the future
+    // We want events from recently in progress up to 30 days in the future
     const now = new Date();
-    const timeMin = now.toISOString();
+    const pastWindow = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+    const timeMin = pastWindow.toISOString();
     const future = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     const timeMax = future.toISOString();
     
@@ -23,7 +24,10 @@ export async function GET() {
     });
     if (!res.ok) {
       console.error("Calendar API Error:", res.status, await res.text());
-      return NextResponse.json({ error: 'Failed to fetch calendar' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to fetch calendar' }, { 
+        status: 500,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
+      });
     }
 
     const data = await res.json();
@@ -76,10 +80,15 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({ currentShow, nextShow, metrics });
+    return NextResponse.json({ currentShow, nextShow, metrics }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
+    });
 
   } catch (error) {
     console.error("Calendar proxy error:", error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { 
+      status: 500,
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
+    });
   }
 }
