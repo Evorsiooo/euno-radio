@@ -1,6 +1,12 @@
+import "./globals.css";
+
 export const metadata = {
-  title: "Radio rotation service",
+  title: "euno",
   robots: { index: false, follow: false },
+};
+
+export const viewport = {
+  themeColor: "#0e0e0f",
 };
 
 export default function RootLayout({ children }) {
