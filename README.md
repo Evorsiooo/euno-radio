@@ -20,4 +20,4 @@ ADMIN_TOKEN=<long random string> npm run build && ADMIN_TOKEN=<same> npm start
 
 ## History
 
-The original webradio UI, link tracker, advertising page and admin panel are preserved under the git tag `legacy-euno-radio-v1`. Rotate the Icecast admin password and Google API key that appeared in earlier commits.
+The original webradio UI, link tracker, advertising page and admin panel are preserved in git history at commit `19c4aee` (the last commit before this reduction). Rotate the Icecast admin password and Google API key that appeared in earlier commits.
