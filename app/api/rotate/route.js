@@ -22,9 +22,14 @@ function isAuthorized(request) {
   return provided.length === wanted.length && timingSafeEqual(provided, wanted);
 }
 
+// Anything but an authorised POST looks like a missing page.
+export function GET() {
+  return new NextResponse(null, { status: 404 });
+}
+
 export async function POST(request) {
   if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return new NextResponse(null, { status: 404 });
   }
 
   try {
