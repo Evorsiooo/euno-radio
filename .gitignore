@@ -41,3 +41,6 @@ data/links.json
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# download job state on the VPS
+/data/jobs/
