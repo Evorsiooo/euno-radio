@@ -1,26 +1,12 @@
 import { NextResponse } from 'next/server';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { timingSafeEqual } from 'crypto';
+import { isAuthorized } from '@/lib/auth';
 
 const execFilePromise = promisify(execFile);
 const ROTATE_SCRIPT = process.env.ROTATE_SCRIPT_PATH || '/usr/local/bin/rotate_radio_pass.sh';
 
 export const dynamic = 'force-dynamic';
-
-// The ftn.euno.cc site calls this with the shared token. ADMIN_TOKEN must be set;
-// there is no unauthenticated fallback.
-function isAuthorized(request) {
-  const expected = process.env.ADMIN_TOKEN;
-  if (!expected) return false;
-
-  const header = request.headers.get('Authorization') || '';
-  if (!header.startsWith('Bearer ')) return false;
-
-  const provided = Buffer.from(header.slice(7));
-  const wanted = Buffer.from(expected);
-  return provided.length === wanted.length && timingSafeEqual(provided, wanted);
-}
 
 // Anything but an authorised POST looks like a missing page.
 export function GET() {
