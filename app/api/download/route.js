@@ -20,7 +20,7 @@ export function GET(request) {
   );
 }
 
-/** { url, meta? } -> 202 { jobId, job } */
+/** { url, meta? } or { recheck: [{ videoId }], meta? } -> 202 { jobId, job } */
 export async function POST(request) {
   if (!isAuthorized(request)) return notFound();
 
@@ -36,7 +36,7 @@ export async function POST(request) {
   }
 
   try {
-    const job = createJob({ url: body?.url, meta: body?.meta });
+    const job = createJob({ url: body?.url, meta: body?.meta, recheck: body?.recheck });
     return NextResponse.json({ jobId: job.id, job }, { status: 202, headers: noStore });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 400, headers: noStore });
