@@ -16,6 +16,10 @@ ftn.euno.cc calls this from Radio settings: set the **Rotation Endpoint URL** to
 
 Needs yt-dlp, deno (for YouTube's JS challenges) and these in `.env.local`: `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, `R2_BUCKET`. yt-dlp and deno are found in `~/.local/bin` and `~/.deno/bin` even when PM2's PATH lacks them (override with `YTDLP_PATH`, `DENO_PATH`). If YouTube ever starts asking the server to sign in, export a cookies.txt and set `YTDLP_COOKIES` to its path. Job state lives in `data/jobs/` (gitignored, survives `git reset --hard`).
 
+## Song search
+
+`GET /api/search?q=<words>` with the same Bearer token returns up to 20 songs from YouTube Music's Songs search (`videoId`, `title`, `artist`, `album`, `durationSec`, `thumbnail`, `url`). Read-only: it downloads and stores nothing. Answers are kept in memory for 10 minutes. ftn.euno.cc uses it for live search in the Library, the Studio and the AI tools; a pick becomes a normal `/api/download` of the song's link.
+
 ## Run
 
 ```bash
